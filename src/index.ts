@@ -88,9 +88,9 @@ query ($owner: String!, $repo: String!, $env: String!) {
     info(`Deleting deployment ${d.url}`);
     const res = await fetch(`${endpoint}/${d.id}`, { ...headers, method: 'DELETE' });
     if (res.status === 200) {
-      const deployment = deployments.repository.deployments.edges.find(
-        ({ node }) => node.statuses.edges[0].node.environmentUrl === d.url
-      )?.node;
+      const deployment = deployments.repository.deployments.edges
+        .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === githubBranch)
+        .find(({ node }) => node.statuses.edges[0].node.environmentUrl === d.url)?.node;
       debug(inspect(deployment, { depth: null }));
       if (deployment) {
         await octokit.graphql(

@@ -64,7 +64,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
 
   const deploymentUrls = deployments.repository.deployments.edges
     .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === githubBranch)
-    .filter(({ node }) => node.commit.oid !== context.sha)
+    .filter(({ node }) => context.eventName !== 'delete' && node.commit.oid !== context.sha)
     .map(({ node }) => node.statuses.edges[0].node.environmentUrl);
   if (!deploymentUrls.length) return info('No deployments found');
   debug(`Found deployments: ${deploymentUrls.join(', ')}`);

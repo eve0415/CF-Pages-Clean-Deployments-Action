@@ -1,0 +1,68 @@
+name: Update script
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-tests-${{ github.head_ref || github.ref_name }}-update
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: Update script
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup git
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Get the version from package.json
+        id: version
+        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+
+      - name: Fetch all branches
+        run: git fetch --all
+
+      - name: Switch branch
+        run: |
+          if git rev-parse --verify origin/v${{ steps.version.outputs.version }} >/dev/null 2>&1; then
+            git checkout v${{ steps.version.outputs.version }}
+          else
+            git checkout -B v${{ steps.version.outputs.version }}
+          fi
+
+      - name: Merge main into branch
+        run: git merge --no-ff --no-commit main
+
+      - name: Setup Node.js v16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build code
+        run: yarn build
+
+      - name: Commit changes
+        run: |
+          git add -f dist/index.js
+          git commit -m "chore: update script"
+
+      - name: Push commit
+        run: git push origin v${{ steps.version.outputs.version }}

@@ -1,0 +1,109 @@
+{
+  "root": true,
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "ecmaFeatures": {
+      "modules": true
+    }
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:@typescript-eslint/strict",
+    "plugin:import/recommended",
+    "prettier"
+  ],
+  "rules": {
+    "import/newline-after-import": "error",
+    "import/no-empty-named-blocks": "error",
+    "import/no-extraneous-dependencies": "error",
+    "import/no-import-module-exports": "error",
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always",
+        "groups": ["type", "builtin", "external", "internal", ["parent", "sibling", "index"]],
+        "distinctGroup": true
+      }
+    ],
+    "array-callback-return": "error",
+    "camelcase": ["error", { "ignoreImports": true, "properties": "never" }],
+    "eqeqeq": "error",
+    "logical-assignment-operators": "error",
+    "no-array-constructor": "error",
+    "no-await-in-loop": "error",
+    "no-constructor-return": "error",
+    "no-else-return": "error",
+    "no-extra-bind": "error",
+    "no-lonely-if": "error",
+    "no-new-native-nonconstructor": "error",
+    "no-new-object": "error",
+    "no-new-wrappers": "error",
+    "no-promise-executor-return": "error",
+    "no-self-compare": "error",
+    "no-template-curly-in-string": "error",
+    "no-unmodified-loop-condition": "error",
+    "no-unreachable-loop": "error",
+    "no-unused-private-class-members": "error",
+    "no-useless-computed-key": "error",
+    "no-useless-rename": "error",
+    "no-var": "error",
+    "object-shorthand": "error",
+    "operator-assignment": "error",
+    "prefer-arrow-callback": "error",
+    "prefer-const": "error",
+    "prefer-exponentiation-operator": "error",
+    "prefer-numeric-literals": "error",
+    "prefer-object-has-own": "error",
+    "prefer-object-spread": "error",
+    "prefer-regex-literals": "error",
+    "prefer-spread": "error",
+    "prefer-template": "error",
+    "require-atomic-updates": "error",
+    "yoda": "error"
+  },
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "ecmaVersion": "latest",
+        "ecmaFeatures": {
+          "modules": true
+        },
+        "project": "./tsconfig.json"
+      },
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:@typescript-eslint/strict",
+        "plugin:import/recommended",
+        "plugin:import/typescript",
+        "prettier"
+      ],
+      "settings": {
+        "import/resolver": {
+          "typescript": {}
+        }
+      },
+      "rules": {
+        "@typescript-eslint/consistent-type-exports": [
+          "error",
+          { "fixMixedExportsWithInlineTypeSpecifier": false }
+        ],
+        "@typescript-eslint/consistent-type-imports": ["error", { "disallowTypeAnnotations": false }],
+        "@typescript-eslint/method-signature-style": "error",
+        "@typescript-eslint/no-use-before-define": ["error", "nofunc"],
+        "@typescript-eslint/no-unnecessary-qualifier": "error",
+        "@typescript-eslint/no-useless-empty-export": "error",
+        "@typescript-eslint/prefer-readonly": "error",
+        "@typescript-eslint/prefer-regexp-exec": "error",
+        "@typescript-eslint/sort-type-constituents": "error",
+        "require-jsdoc": "off",
+        "no-unused-vars": "off"
+      }
+    }
+  ]
+}

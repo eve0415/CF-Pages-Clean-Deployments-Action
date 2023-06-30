@@ -1,5 +1,8 @@
 name: CloudFlare Pages Clean Deployment Action
 description: This action will remove the old CloudFlare Pages deployment which are marked Preview.
+branding:
+  icon: cloud-off
+  color: orange
 inputs:
   apiToken:
     description: Cloudflare API Token

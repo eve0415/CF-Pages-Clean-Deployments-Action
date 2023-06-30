@@ -3,7 +3,6 @@ import type { RequestInit } from 'undici';
 import type { Deployments } from './cloudflare';
 
 import { env } from 'process';
-import { inspect } from 'util';
 
 import { debug, getInput, info, setFailed } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
@@ -24,7 +23,7 @@ import { fetch } from 'undici';
           node: {
             id: string;
             state: DeploymentState;
-            commit: { id: string };
+            commit: { oid: string };
             ref: { name: string };
             statuses: { edges: { node: { environmentUrl: string; logUrl: string } }[] };
           };
@@ -41,7 +40,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
           id
           state
           commit {
-            id
+            oid
           }
           ref {
             name
@@ -65,7 +64,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
 
   const deploymentUrls = deployments.repository.deployments.edges
     .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === githubBranch)
-    .filter(({ node }) => node.commit.id !== context.sha)
+    .filter(({ node }) => node.commit.oid !== context.sha)
     .map(({ node }) => node.statuses.edges[0].node.environmentUrl);
   if (!deploymentUrls.length) return info('No deployments found');
   debug(`Found deployments: ${deploymentUrls.join(', ')}`);

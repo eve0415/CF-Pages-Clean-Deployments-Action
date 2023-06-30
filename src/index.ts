@@ -2,7 +2,7 @@ import type { DeploymentState } from '@octokit/graphql-schema';
 import type { RequestInit } from 'undici';
 import type { Deployments } from './cloudflare';
 
-import { getInput, info, setFailed } from '@actions/core';
+import { debug, getInput, info, setFailed } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { fetch } from 'undici';
 
@@ -62,6 +62,8 @@ query ($owner: String!, $repo: String!, $env: String!) {
     .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === context.ref)
     .filter(({ node }) => node.commit.id !== context.sha)
     .map(({ node }) => node.statuses.edges[0].node.environmentUrl);
+  if (!deploymentUrls.length) return info('No deployments found');
+  debug(`Found deployments: ${deploymentUrls.join(', ')}`);
 
   const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`;
   const headers: RequestInit = { headers: { Authorization: `Bearer ${apiToken}` } };
@@ -75,6 +77,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
     .filter(d => !d.is_skipped)
     .filter(d => deploymentUrls.includes(d.url));
   if (!cfDeployments.length) return info('No deployments to delete');
+  debug(`Found Cloudflare deployments: ${cfDeployments.map(d => d.url).join(', ')}`);
 
   for await (const d of cfDeployments) {
     info(`Deleting deployment ${d.url}`);

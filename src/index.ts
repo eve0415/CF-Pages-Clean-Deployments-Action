@@ -3,7 +3,6 @@ import type { RequestInit } from 'undici';
 import type { Deployments } from './cloudflare';
 
 import { env } from 'process';
-import { inspect } from 'util';
 
 import { debug, getInput, info, setFailed } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
@@ -91,17 +90,15 @@ query ($owner: String!, $repo: String!, $env: String!) {
       const deployment = deployments.repository.deployments.edges
         .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === githubBranch)
         .find(({ node }) => node.statuses.edges[0].node.environmentUrl === d.url)?.node;
-      debug(inspect(deployment, { depth: null }));
       if (deployment) {
         await octokit.graphql(
           `
-mutation ($id: ID!, $environmentUrl: URI!, $logUrl: URI!) {
+mutation ($id: ID!, $environmentUrl: String!, $logUrl: String!) {
   createDeploymentStatus(
-    id: $id
-    environmentUrl: $environmentUrl
-    logUrl: $logUrl
-    state: "INACTIVE"
-  )
+    input: { deploymentId: $id, environmentUrl: $environmentUrl, logUrl: $logUrl, state: INACTIVE }
+  ) {
+    clientMutationId
+  }
 }
 `,
           {

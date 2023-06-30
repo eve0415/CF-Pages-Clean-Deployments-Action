@@ -85,7 +85,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
 
   for await (const d of cfDeployments) {
     info(`Deleting deployment ${d.url}`);
-    const res = await fetch(`${endpoint}/${d.id}/preview`, { ...headers, method: 'DELETE' });
+    const res = await fetch(`${endpoint}/${d.id}`, { ...headers, method: 'DELETE' });
     if (res.status === 200) {
       const deployment = deployments.repository.deployments.edges.find(
         ({ node }) => node.statuses.edges[0].node.environmentUrl === d.url

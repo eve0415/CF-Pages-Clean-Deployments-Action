@@ -2,7 +2,7 @@ import type { DeploymentState } from '@octokit/graphql-schema';
 import type { RequestInit } from 'undici';
 import type { Deployments } from './cloudflare';
 
-import { getInput, setFailed } from '@actions/core';
+import { getInput, info, setFailed } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { fetch } from 'undici';
 
@@ -18,10 +18,11 @@ import { fetch } from 'undici';
       deployments: {
         edges: {
           node: {
+            id: string;
             state: DeploymentState;
             commit: { id: string };
             ref: { name: string };
-            statuses: { edges: { node: { environmentUrl: string } }[] };
+            statuses: { edges: { node: { environmentUrl: string; logUrl: string } }[] };
           };
         }[];
       };
@@ -33,6 +34,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
     deployments(environments: [$env], first: 100) {
       edges {
         node {
+          id
           state
           commit {
             id
@@ -44,6 +46,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
             edges {
               node {
                 environmentUrl
+                logUrl
               }
             }
           }
@@ -71,6 +74,37 @@ query ($owner: String!, $repo: String!, $env: String!) {
   const cfDeployments = deploymentsResponse.result
     .filter(d => !d.is_skipped)
     .filter(d => deploymentUrls.includes(d.url));
+  if (!cfDeployments.length) return info('No deployments to delete');
+
+  for await (const d of cfDeployments) {
+    info(`Deleting deployment ${d.url}`);
+    const res = await fetch(`${endpoint}/${d.id}/preview`, { ...headers, method: 'DELETE' });
+    if (res.status === 200) {
+      const deployment = deployments.repository.deployments.edges.find(
+        ({ node }) => node.statuses.edges[0].node.environmentUrl === d.url
+      );
+      if (deployment) {
+        await octokit.graphql(
+          `
+mutation ($id: ID!, $environmentUrl: URI!, $logUrl: URI!) {
+  createDeploymentStatus(
+    id: $id
+    environmentUrl: $environmentUrl
+    logUrl: $logUrl
+    state: "INACTIVE"
+  )
+}
+          `,
+          {
+            id: deployment.node.id,
+            environmentUrl: d.url,
+            logUrl: deployment.node.statuses.edges[0].node.logUrl,
+            headers: { accept: 'application/vnd.github.flash-preview+json' },
+          }
+        );
+      }
+    }
+  }
 
   await Promise.allSettled(
     cfDeployments.map(d => fetch(`${endpoint}/${d.id}`, { ...headers, method: 'DELETE' }))

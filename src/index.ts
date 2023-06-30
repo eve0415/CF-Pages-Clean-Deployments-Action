@@ -2,6 +2,9 @@ import type { DeploymentState } from '@octokit/graphql-schema';
 import type { RequestInit } from 'undici';
 import type { Deployments } from './cloudflare';
 
+import { env } from 'process';
+import { inspect } from 'util';
+
 import { debug, getInput, info, setFailed } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { fetch } from 'undici';
@@ -11,6 +14,7 @@ import { fetch } from 'undici';
   const accountId = getInput('accountId', { required: true });
   const projectName = getInput('projectName', { required: true });
   const githubToken = getInput('gitHubToken', { required: true });
+  const githubBranch = env.GITHUB_HEAD_REF ?? env.GITHUB_REF_NAME ?? context.ref;
 
   const octokit = getOctokit(githubToken);
   const deployments = await octokit.graphql<{
@@ -58,8 +62,9 @@ query ($owner: String!, $repo: String!, $env: String!) {
 `,
     { owner: context.repo.owner, repo: context.repo.repo, env: `${projectName} (Preview)` }
   );
+
   const deploymentUrls = deployments.repository.deployments.edges
-    .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === context.ref)
+    .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === githubBranch)
     .filter(({ node }) => node.commit.id !== context.sha)
     .map(({ node }) => node.statuses.edges[0].node.environmentUrl);
   if (!deploymentUrls.length) return info('No deployments found');

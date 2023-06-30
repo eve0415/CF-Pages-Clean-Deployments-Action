@@ -1,0 +1,18 @@
+name: CloudFlare Pages Clean Deployment Action
+description: This action will remove the old CloudFlare Pages deployment which are marked Preview.
+inputs:
+  apiToken:
+    description: Cloudflare API Token
+    required: true
+  accountId:
+    description: Cloudflare Account ID
+    required: true
+  projectName:
+    description: The name of the Pages project to check to
+    required: true
+  gitHubToken:
+    description: GitHub Token
+    default: ${{ github.token }}
+runs:
+  using: node16
+  main: dist/index.js

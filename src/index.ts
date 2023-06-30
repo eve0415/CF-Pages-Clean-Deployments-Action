@@ -3,6 +3,7 @@ import type { RequestInit } from 'undici';
 import type { Deployments } from './cloudflare';
 
 import { env } from 'process';
+import { inspect } from 'util';
 
 import { debug, getInput, info, setFailed } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
@@ -89,7 +90,8 @@ query ($owner: String!, $repo: String!, $env: String!) {
     if (res.status === 200) {
       const deployment = deployments.repository.deployments.edges.find(
         ({ node }) => node.statuses.edges[0].node.environmentUrl === d.url
-      );
+      )?.node;
+      debug(inspect(deployment, { depth: null }));
       if (deployment) {
         await octokit.graphql(
           `
@@ -101,11 +103,11 @@ mutation ($id: ID!, $environmentUrl: URI!, $logUrl: URI!) {
     state: "INACTIVE"
   )
 }
-          `,
+`,
           {
-            id: deployment.node.id,
+            id: deployment.id,
             environmentUrl: d.url,
-            logUrl: deployment.node.statuses.edges[0].node.logUrl,
+            logUrl: deployment.statuses.edges[0].node.logUrl,
             headers: { accept: 'application/vnd.github.flash-preview+json' },
           }
         );

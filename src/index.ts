@@ -89,22 +89,20 @@ query ($owner: String!, $repo: String!, $env: String!) {
     if (res.status === 200) {
       const deployment = deployments.repository.deployments.edges
         .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === githubBranch)
-        .find(({ node }) => node.statuses.edges[0].node.environmentUrl === d.url)?.node;
+        .find(({ node }) => node.statuses.edges[0].node.environmentUrl === d.url)?.node.id;
       if (deployment) {
         await octokit.graphql(
           `
-mutation ($id: ID!, $environmentUrl: String!, $logUrl: String!) {
+mutation ($id: ID!) {
   createDeploymentStatus(
-    input: { deploymentId: $id, environmentUrl: $environmentUrl, logUrl: $logUrl, state: INACTIVE }
+    input: { deploymentId: $id, environmentUrl: "", logUrl: "", state: INACTIVE }
   ) {
     clientMutationId
   }
 }
 `,
           {
-            id: deployment.id,
-            environmentUrl: d.url,
-            logUrl: deployment.statuses.edges[0].node.logUrl,
+            id: deployment,
             headers: { accept: 'application/vnd.github.flash-preview+json' },
           }
         );

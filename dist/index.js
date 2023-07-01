@@ -25201,7 +25201,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
 `,
     { owner: import_github.context.repo.owner, repo: import_github.context.repo.repo, env: `${projectName} (Preview)` }
   );
-  const deploymentUrls = deployments.repository.deployments.edges.filter(({ node }) => node.state === "ACTIVE" && node.ref.name === githubBranch).filter(({ node }) => node.commit.oid !== import_github.context.sha).map(({ node }) => node.statuses.edges[0].node.environmentUrl);
+  const deploymentUrls = deployments.repository.deployments.edges.filter(({ node }) => node.state === "ACTIVE" && node.ref.name === githubBranch).filter(({ node }) => import_github.context.eventName !== "delete" && node.commit.oid !== import_github.context.sha).map(({ node }) => node.statuses.edges[0].node.environmentUrl);
   if (!deploymentUrls.length)
     return (0, import_core.info)("No deployments found");
   (0, import_core.debug)(`Found deployments: ${deploymentUrls.join(", ")}`);

@@ -8,3 +8,6 @@ trim_trailing_whitespace = true
 
 [*.{js,json,yml}]
 indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false

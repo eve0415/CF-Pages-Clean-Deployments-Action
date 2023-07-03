@@ -26,8 +26,8 @@ import { fetch } from 'undici';
             id: string;
             state: DeploymentState;
             commit: { oid: string };
-            ref: { name: string };
-            statuses: { edges: { node: { environmentUrl: string; logUrl: string } }[] };
+            ref: { name: string } | null;
+            statuses: { edges: { node: { environmentUrl: string | null; logUrl: string | null } }[] };
           };
         }[];
       };
@@ -64,10 +64,14 @@ query ($owner: String!, $repo: String!, $env: String!) {
     { owner: context.repo.owner, repo: context.repo.repo, env: `${projectName} (Preview)` }
   );
 
-  const deploymentUrls = deployments.repository.deployments.edges
-    .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === githubBranch)
-    .filter(({ node }) => context.eventName !== 'delete' && node.commit.oid !== context.sha)
-    .map(({ node }) => node.statuses.edges[0].node.environmentUrl);
+  const githubDeployments = deployments.repository.deployments.edges
+    .filter(({ node }) => node.state !== 'ABANDONED')
+    .filter(({ node }) => node.statuses.edges.length)
+    .filter(({ node }) => node.statuses.edges[0].node.environmentUrl !== null)
+    .filter(
+      ({ node }) => (node.ref?.name === githubBranch && node.commit.oid !== context.sha) || node.ref === null
+    );
+  const deploymentUrls = githubDeployments.map(({ node }) => node.statuses.edges[0].node.environmentUrl);
   if (!deploymentUrls.length) return info('No deployments found');
   debug(`Found deployments: ${deploymentUrls.join(', ')}`);
 
@@ -89,9 +93,9 @@ query ($owner: String!, $repo: String!, $env: String!) {
     info(`Deleting deployment ${d.url}`);
     const res = await fetch(`${endpoint}/${d.id}`, { ...headers, method: 'DELETE' });
     if (res.status === 200) {
-      const deployment = deployments.repository.deployments.edges
-        .filter(({ node }) => node.state === 'ACTIVE' && node.ref.name === githubBranch)
-        .find(({ node }) => node.statuses.edges[0].node.environmentUrl === d.url)?.node.id;
+      const deployment = githubDeployments.find(
+        ({ node }) => node.statuses.edges[0].node.environmentUrl === d.url
+      )?.node.id;
       if (deployment) {
         await octokit.graphql(
           `

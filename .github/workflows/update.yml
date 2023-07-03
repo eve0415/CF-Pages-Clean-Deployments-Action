@@ -45,7 +45,7 @@ jobs:
 
       - name: Switch branch
         run: |
-          if git rev-parse --verify origin/v${{ steps.branch.outputs.branch }} >/dev/null 2>&1; then
+          if git rev-parse --verify origin/${{ steps.branch.outputs.branch }} >/dev/null 2>&1; then
             git checkout ${{ steps.branch.outputs.branch }}
           else
             git checkout -B ${{ steps.branch.outputs.branch }}

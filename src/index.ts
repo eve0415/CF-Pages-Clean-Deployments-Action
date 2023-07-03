@@ -65,6 +65,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
   );
 
   const githubDeployments = deployments.repository.deployments.edges
+    .filter(({ node }) => node.state !== 'ABANDONED')
     .filter(({ node }) => node.statuses.edges.length)
     .filter(({ node }) => node.statuses.edges[0].node.environmentUrl !== null)
     .filter(

@@ -34,4 +34,4 @@ jobs:
 
       - name: Delete branch
         run: |
-          git push origin --d v${{ github.event.number }}
+          git push origin -d pr-${{ github.event.number }}

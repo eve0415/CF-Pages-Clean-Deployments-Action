@@ -73,7 +73,6 @@ jobs:
 
       - name: Commit changes
         run: |
-          git rm dist/index.js.map
           git add -f dist/index.js
           git commit -m "chore: update script"
 

@@ -61,7 +61,7 @@ jobs:
 
       - name: Commit changes
         run: |
-          git add -f dist/index.js
+          git add -f dist/index.js dist/index.js.map
           git commit -m "chore: update script"
 
       - name: Push commit

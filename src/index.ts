@@ -101,7 +101,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
           `
 mutation ($id: ID!) {
   createDeploymentStatus(
-    input: { deploymentId: $id, environmentUrl: "", logUrl: "", state: DESTROYED }
+    input: { deploymentId: $id, environmentUrl: "", logUrl: "", state: INACTIVE }
   ) {
     clientMutationId
   }

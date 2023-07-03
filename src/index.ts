@@ -78,7 +78,7 @@ query ($owner: String!, $repo: String!, $env: String!) {
   const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`;
   const headers: RequestInit = { headers: { Authorization: `Bearer ${apiToken}` } };
 
-  const deploymentsResponse = await fetch(endpoint, headers)
+  const deploymentsResponse = await fetch(`${endpoint}?per_page=100`, headers)
     .then(res => (res.status === 200 ? res.json() : null))
     .then(data => (data ? (data as Deployments) : null));
   if (!deploymentsResponse) return setFailed('Failed to fetch deployments');

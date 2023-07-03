@@ -30,15 +30,14 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-      - name: Get the version from package.json
-        if: github.event_name == 'push'
+      - name: Get branch name
         id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-      - name: Get the version from pull request number
-        if: github.event_name != 'push'
-        id: version
-        run: echo "version=$(${{github.event.number}})" >> $GITHUB_OUTPUT
+        run: |
+          if [[ ${{ github.event_name }} == 'push' ]]; then
+            echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          else
+            echo "version=$(${{github.event.number}})" >> $GITHUB_OUTPUT
+          fi
 
       - name: Fetch all branches
         run: git fetch --all

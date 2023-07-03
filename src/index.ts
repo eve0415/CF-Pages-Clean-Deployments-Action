@@ -78,7 +78,9 @@ query ($owner: String!, $repo: String!, $env: String!) {
   const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`;
   const headers: RequestInit = { headers: { Authorization: `Bearer ${apiToken}` } };
 
-  const deploymentsResponse = await fetch(`${endpoint}?per_page=50`, headers)
+  const deploymentURL = new URL(endpoint);
+  deploymentURL.searchParams.append('per_page', '100');
+  const deploymentsResponse = await fetch(deploymentURL, headers)
     .then(res => {
       debug(`Cloudflare API response: ${res.status} ${res.statusText}`);
       return res.status === 200 ? res.json() : null;

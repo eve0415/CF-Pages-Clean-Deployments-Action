@@ -15,6 +15,8 @@ import { fetch } from 'undici';
   const githubToken = getInput('gitHubToken', { required: true });
   const githubBranch = env.GITHUB_HEAD_REF ?? env.GITHUB_REF_NAME ?? context.ref;
 
+  info(`GitHub Event Name: ${context.eventName}`);
+
   const octokit = getOctokit(githubToken);
   const deployments = await octokit.graphql<{
     repository: {

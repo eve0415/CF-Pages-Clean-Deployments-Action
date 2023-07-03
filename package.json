@@ -4,7 +4,7 @@
   "packageManager": "yarn@3.6.1",
   "private": true,
   "scripts": {
-    "build": "esbuild ./src/index.ts --bundle --sourcemap=both --platform=node --outfile=./dist/index.js",
+    "build": "esbuild ./src/index.ts --bundle --platform=node --outfile=./dist/index.js",
     "lint": "eslint --fix . & prettier --write \"./**/*.{ts,js,json,yml}\"",
     "lint:ci": "eslint . && yarn prettier --check \"./**/*.{ts,js,json,yml}\"",
     "sdk": "yarn dlx @yarnpkg/sdks"

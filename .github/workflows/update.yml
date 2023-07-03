@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 concurrency:
-  group: ci-tests-${{ github.head_ref || github.ref_name }}-update
+  group: ci-update-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -29,23 +30,34 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-      - name: Get the version from package.json
+      - name: Get version from package.json
         id: version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        env:
+          BRANCH_NAME: ${{github.event_name == 'push' && format('v{0}', steps.version.outputs.version) || format('pr-{0}', github.event.pull_request.number)}}
 
       - name: Fetch all branches
         run: git fetch --all
 
       - name: Switch branch
         run: |
-          if git rev-parse --verify origin/v${{ steps.version.outputs.version }} >/dev/null 2>&1; then
-            git checkout v${{ steps.version.outputs.version }}
+          if git rev-parse --verify origin/${{ steps.branch.outputs.branch }} >/dev/null 2>&1; then
+            git checkout ${{ steps.branch.outputs.branch }}
           else
-            git checkout -B v${{ steps.version.outputs.version }}
+            git checkout -B ${{ steps.branch.outputs.branch }}
           fi
 
-      - name: Merge main into branch
-        run: git merge --no-ff --no-commit main
+      - name: Merge base into branch
+        run: |
+          if [[ ${{ github.event_name }} == 'push' ]]; then
+            git merge --no-ff --no-commit main
+          else
+            git merge --no-ff --no-commit origin/${{ github.head_ref }}
+          fi
 
       - name: Setup Node.js v16
         uses: actions/setup-node@v3
@@ -65,4 +77,4 @@ jobs:
           git commit -m "chore: update script"
 
       - name: Push commit
-        run: git push origin v${{ steps.version.outputs.version }}
+        run: git push origin ${{ steps.branch.outputs.branch }}

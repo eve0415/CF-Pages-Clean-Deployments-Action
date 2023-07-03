@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "build": "esbuild ./src/index.ts --bundle --sourcemap=both --platform=node --outfile=./dist/index.js",
-    "lint": "next lint --fix & prettier --write \"./**/*.{ts,js,json,yml}\"",
-    "lint:ci": "next lint && yarn prettier --check \"./**/*.{ts,js,json,yml}\"",
+    "lint": "eslint --fix . & prettier --write \"./**/*.{ts,js,json,yml}\"",
+    "lint:ci": "eslint . && yarn prettier --check \"./**/*.{ts,js,json,yml}\"",
     "sdk": "yarn dlx @yarnpkg/sdks"
   },
   "devDependencies": {

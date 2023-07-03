@@ -1,6 +1,9 @@
+/**
+ * @see https://developers.cloudflare.com/api/operations/pages-deployment-get-deployments
+ */
 export interface Deployments {
-  errors: unknown[];
-  messages: unknown[];
+  errors: { code: number; message: string }[];
+  messages: { code: number; message: string }[];
   result: Deployment[];
   success: boolean;
   result_info: {

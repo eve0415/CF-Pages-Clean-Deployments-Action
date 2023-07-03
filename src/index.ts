@@ -27,7 +27,7 @@ import { fetch } from 'undici';
             state: DeploymentState;
             commit: { oid: string };
             ref: { name: string } | null;
-            statuses: { edges: { node: { environmentUrl: string; logUrl: string } }[] };
+            statuses: { edges: { node: { environmentUrl: string | null; logUrl: string | null } }[] };
           };
         }[];
       };
@@ -65,8 +65,11 @@ query ($owner: String!, $repo: String!, $env: String!) {
   );
 
   const githubDeployments = deployments.repository.deployments.edges
-    .filter(({ node }) => (node.state === 'ACTIVE' && node.ref?.name === githubBranch) || node.ref === null)
-    .filter(({ node }) => context.eventName !== 'delete' && node.commit.oid !== context.sha);
+    .filter(({ node }) => node.statuses.edges.length)
+    .filter(({ node }) => node.statuses.edges[0].node.environmentUrl !== null)
+    .filter(
+      ({ node }) => (node.ref?.name === githubBranch && node.commit.oid !== context.sha) || node.ref === null
+    );
   const deploymentUrls = githubDeployments.map(({ node }) => node.statuses.edges[0].node.environmentUrl);
   if (!deploymentUrls.length) return info('No deployments found');
   debug(`Found deployments: ${deploymentUrls.join(', ')}`);

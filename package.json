@@ -1,6 +1,6 @@
 {
   "name": "cf-pages-clean-deployments-action",
-  "version": "0",
+  "version": "0.dev",
   "packageManager": "yarn@3.6.1",
   "private": true,
   "scripts": {
